@@ -29,5 +29,10 @@ func main() {
 
 func (s *server) SendString(ctx context.Context, in *pb.StringRequest) (*pb.StringReply, error) {
 	log.Printf("Received message: %s", in.GetMessage())
-	return &pb.StringReply{Message: "Received: " + in.GetMessage()}, nil
+
+	if in.GetMessage() == "к" {
+		return &pb.StringReply{Message: "жопа"}, nil
+	}
+
+	return &pb.StringReply{Message: "Message for client : " + in.GetMessage()}, nil
 }
