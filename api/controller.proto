@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package example;
+
+option go_package = "../gen";
+
+service StringService {
+  rpc SendString (StringRequest) returns (StringReply) {}
+}
+
+message StringRequest {
+  string message = 1;
+}
+
+message StringReply {
+  string message = 1;
+}
