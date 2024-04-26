@@ -4,6 +4,10 @@ package example;
 
 option go_package = "../gen";
 
+service ServiceSum {
+    rpc
+}
+
 service StringService {
   rpc SendString (StringRequest) returns (StringReply) {};
 }

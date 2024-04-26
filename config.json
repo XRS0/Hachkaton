@@ -1,4 +1,14 @@
 {
-  "m1": ":50052",
-  "m2": ":50051"
+  "m1": {
+    "port": ":50052",
+    "isRunning": false
+  },
+  "m2": {
+    "port": ":50053",
+    "isRunning": false
+  },
+  "m3": {
+    "port": ":50054",
+    "isRunning": false
+  }
 }
