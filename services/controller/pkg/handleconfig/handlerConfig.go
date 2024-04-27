@@ -47,23 +47,32 @@ func ChangeJson(act, serv, port string) {
 		}
 		newJson[key] = Json{Port: port, IsRunning: false}
 	case "start":
-		if val, ok := newJson[key]; ok {
-			if serv == "bc" {
-				for key, _ := range newJson {
-					if valueIntoBranching, ok := newJson[key]; ok {
-						newJson[key] = Json{Port: valueIntoBranching.Port, IsRunning: true}
-					}
+		if serv == "bc" {
+			for key := range newJson {
+				if val, ok := newJson[key]; ok {
+					newJson[key] = Json{Port: val.Port, IsRunning: true}
 				}
 			}
-			newJson[key] = Json{Port: val.Port, IsRunning: true}
 		} else {
-			log.Fatalf("ERROR: Server with key %s does not exist", key)
+			if val, ok := newJson[key]; ok {
+				newJson[key] = Json{Port: val.Port, IsRunning: true}
+			} else {
+				log.Fatalf("ERROR: Server with key %s does not exist", key)
+			}
 		}
 	case "stop":
-		if val, ok := newJson[key]; ok {
-			newJson[key] = Json{Port: val.Port, IsRunning: false}
+		if serv == "bc" {
+			for key := range newJson {
+				if val, ok := newJson[key]; ok {
+					newJson[key] = Json{Port: val.Port, IsRunning: false}
+				}
+			}
 		} else {
-			log.Fatalf("ERROR: Server with key %s does not exist", key)
+			if val, ok := newJson[key]; ok {
+				newJson[key] = Json{Port: val.Port, IsRunning: false}
+			} else {
+				log.Fatalf("ERROR: Server with key %s does not exist", key)
+			}
 		}
 	case "chport":
 		if val, ok := newJson[serv]; ok {

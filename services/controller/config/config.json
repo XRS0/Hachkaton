@@ -2,5 +2,13 @@
  "m1": {
   "port": "50052",
   "isRunning": false
+ },
+ "mmaslo": {
+  "port": "50051",
+  "isRunning": false
+ },
+ "mmaslov": {
+  "port": "50054",
+  "isRunning": false
  }
 }

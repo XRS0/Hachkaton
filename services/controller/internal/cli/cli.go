@@ -26,7 +26,7 @@ func RunCLI() (string, string, string) {
 			action = "start"
 			service = args[0]
 			if service == "bc" {
-				fmt.Println("f")
+				fmt.Println("INFO all servers starting...")
 				return
 			}
 			if len(args) > 1 {
@@ -36,9 +36,10 @@ func RunCLI() (string, string, string) {
 						fmt.Fprintf(os.Stderr, "Error: Port must be a number\n")
 						os.Exit(1)
 					}
+
 				}
 			} else {
-				port = "not specified" // Handle cases where the port is not provided.
+				port = "not specified"
 			}
 			fmt.Printf("%sing %s on port %s...\n", action, service, port)
 		},
@@ -48,10 +49,13 @@ func RunCLI() (string, string, string) {
 		Use:   "stop [model]",
 		Short: "Stops the model",
 		Long:  `Stops the specified model.`,
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			action = "stop"
 			service = args[0]
+			if service == "bc" {
+				return
+			}
 			port = "oldport"
 			fmt.Printf("%sping %s on %s...\n", action, service, port)
 		},
