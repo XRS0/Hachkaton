@@ -27,12 +27,14 @@ func RunCLI() (string, string, string) {
 			service = args[0]
 			port = args[1]
 
-			if _, err := strconv.Atoi(port); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: Port must be a number\n")
-				os.Exit(1)
+			if port != "oldport" {
+				if _, err := strconv.Atoi(port); err != nil {
+					fmt.Fprintf(os.Stderr, "Error: Port must be a number\n")
+					os.Exit(1)
+				}
 			}
 
-			fmt.Printf("%sing %s on %s...", action, service, port)
+			fmt.Printf("%sing %s on %s...\n", action, service, port)
 		},
 	}
 
@@ -44,8 +46,8 @@ func RunCLI() (string, string, string) {
 		Run: func(cmd *cobra.Command, args []string) {
 			action = "stop"
 			service = args[0]
-			port = ""
-			fmt.Printf("Stopping %s...", service)
+			port = "oldport"
+			fmt.Printf("%sping %s on %s...\n", action, service, port)
 		},
 	}
 

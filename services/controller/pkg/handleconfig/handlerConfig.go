@@ -37,18 +37,35 @@ func ChangeJson(act, serv, port string) {
 
 	switch act {
 	case "add":
-		for _, value := range newJson {
+		for keyIntoMap, value := range newJson {
 			if value.Port == port {
 				log.Fatal("ERROR: Port is already in use")
+			}
+			if keyIntoMap == key {
+				log.Fatal("ERROR: Name of service is already in use")
 			}
 		}
 		newJson[key] = Json{Port: port, IsRunning: false}
 	case "start":
-		newJson[key] = Json{Port: port, IsRunning: true}
+		if val, ok := newJson[key]; ok {
+			newJson[key] = Json{Port: val.Port, IsRunning: true}
+		} else {
+			log.Fatalf("ERROR: Server with key %s does not exist", key)
+		}
 	case "stop":
-		newJson[key].Port = ""
+		if val, ok := newJson[key]; ok {
+			newJson[key] = Json{Port: val.Port, IsRunning: false}
+		} else {
+			log.Fatalf("ERROR: Server with key %s does not exist", key)
+		}
 	case "chport":
-		newJson[serv] = Json{Port: port, IsRunning: false}
+		if val, ok := newJson[serv]; ok {
+			newJson[serv] = Json{Port: port, IsRunning: val.IsRunning}
+		} else {
+			log.Fatalf("ERROR: Server with key %s does not exist", serv)
+		}
+	default:
+		log.Fatal("ERROR: Invalid action specified")
 	}
 
 	jsondata, err := json.MarshalIndent(newJson, "", " ")
