@@ -6,3 +6,6 @@ goruncli:
 
 pyrun:
 	python3 services/sumService/cmd/main.py
+
+gobuild:
+	cd services/controller/cmd && go build -o controller . && sudo mv controller /usr/local/bin/

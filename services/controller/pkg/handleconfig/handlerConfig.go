@@ -48,6 +48,13 @@ func ChangeJson(act, serv, port string) {
 		newJson[key] = Json{Port: port, IsRunning: false}
 	case "start":
 		if val, ok := newJson[key]; ok {
+			if serv == "bc" {
+				for key, _ := range newJson {
+					if valueIntoBranching, ok := newJson[key]; ok {
+						newJson[key] = Json{Port: valueIntoBranching.Port, IsRunning: true}
+					}
+				}
+			}
 			newJson[key] = Json{Port: val.Port, IsRunning: true}
 		} else {
 			log.Fatalf("ERROR: Server with key %s does not exist", key)
@@ -63,6 +70,12 @@ func ChangeJson(act, serv, port string) {
 			newJson[serv] = Json{Port: port, IsRunning: val.IsRunning}
 		} else {
 			log.Fatalf("ERROR: Server with key %s does not exist", serv)
+		}
+	case "del":
+		if _, exists := newJson[key]; exists {
+			delete(newJson, key)
+		} else {
+			log.Fatalf("ERROR: Server with key %s does not exist", key)
 		}
 	default:
 		log.Fatal("ERROR: Invalid action specified")

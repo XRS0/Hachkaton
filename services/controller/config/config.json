@@ -1,10 +1,6 @@
 {
- "mFusion": {
+ "m1": {
   "port": "50052",
-  "isRunning": false
- },
- "mMus": {
-  "port": "50057",
   "isRunning": false
  }
 }
