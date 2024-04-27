@@ -13,8 +13,7 @@ import (
 // "google.golang.org/grpc"
 
 func main() {
-	action, service, port := RunCLI()
-	cfg.ChangeJson(action, service, port)
+	cfg.ChangeJson(RunCLI())
 
 	// conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	// if err != nil {
