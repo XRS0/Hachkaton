@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package service;
+
+option go_package = "../gen";
+
+service SumService {
+  rpc Sum(stream SumRequest) returns (stream SumResponse);
+}
+
+message SumRequest {
+  optional string port = 1;
+}
+
+message SumResponse {
+  optional string success = 2;
+}

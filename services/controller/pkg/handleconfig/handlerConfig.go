@@ -101,3 +101,6 @@ func ChangeJson(act, serv, port string) {
 	fmt.Println(newJson)
 	fmt.Println("Json is fine!")
 }
+
+// TODO:
+// 1. вспомнить как делать клиент grpc

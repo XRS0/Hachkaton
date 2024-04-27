@@ -9,3 +9,6 @@ pyrun:
 
 gobuild:
 	cd services/controller/cmd && go build -o controller . && sudo mv controller /usr/local/bin/
+
+gentest:
+	cd api && protoc --go_out=../services/controller/gen --go-grpc_out=../services/controller/gen sumgo.proto && protoc --go_out=../services/SumGo/gen --go-grpc_out=../services/SumGo/gen sumgo.proto
