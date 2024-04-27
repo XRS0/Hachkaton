@@ -2,10 +2,10 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import controller_pb2 as controller__pb2
+import m1_pb2 as m1__pb2
 
 
-class StringServiceStub(object):
+class SumServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,42 +14,42 @@ class StringServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.SendString = channel.unary_unary(
-                '/example.StringService/SendString',
-                request_serializer=controller__pb2.StringRequest.SerializeToString,
-                response_deserializer=controller__pb2.StringReply.FromString,
+        self.Sum = channel.stream_stream(
+                '/service.SumService/Sum',
+                request_serializer=m1__pb2.SumRequest.SerializeToString,
+                response_deserializer=m1__pb2.SumResponse.FromString,
                 )
 
 
-class StringServiceServicer(object):
+class SumServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def SendString(self, request, context):
+    def Sum(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_StringServiceServicer_to_server(servicer, server):
+def add_SumServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'SendString': grpc.unary_unary_rpc_method_handler(
-                    servicer.SendString,
-                    request_deserializer=controller__pb2.StringRequest.FromString,
-                    response_serializer=controller__pb2.StringReply.SerializeToString,
+            'Sum': grpc.stream_stream_rpc_method_handler(
+                    servicer.Sum,
+                    request_deserializer=m1__pb2.SumRequest.FromString,
+                    response_serializer=m1__pb2.SumResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'example.StringService', rpc_method_handlers)
+            'service.SumService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class StringService(object):
+class SumService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def SendString(request,
+    def Sum(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +59,8 @@ class StringService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/example.StringService/SendString',
-            controller__pb2.StringRequest.SerializeToString,
-            controller__pb2.StringReply.FromString,
+        return grpc.experimental.stream_stream(request_iterator, target, '/service.SumService/Sum',
+            m1__pb2.SumRequest.SerializeToString,
+            m1__pb2.SumResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

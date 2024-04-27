@@ -1,8 +1,8 @@
 gen:
-	cd api && protoc --go_out=../services/goserv/gen --go-grpc_out=../services/goserv/gen controller.proto && python3 -m grpc_tools.protoc -I. --python_out=../services/pyserv/cmd/ --grpc_python_out=../services/pyserv/cmd/ controller.proto
+	cd api && protoc --go_out=../services/controller/gen --go-grpc_out=../services/controller/gen m1.proto && python3 -m grpc_tools.protoc -I. --python_out=../services/m1/cmd/ --grpc_python_out=../services/m1/cmd/ m1.proto
 
-gorun:
-	go run services/goserv/cmd/main.go
+goruncli:
+	cd services/controller/cmd/ && go build -o main.go && ./cmd start m1 50051
 
 pyrun:
-	python3 services/pyserv/cmd/main.py
+	python3 services/sumService/cmd/main.py
