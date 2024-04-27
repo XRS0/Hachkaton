@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strconv"
 
 	"google.golang.org/grpc"
 )
@@ -14,8 +15,10 @@ type server struct {
 	pb.UnimplementedSumServiceServer
 }
 
+var port string = ":50051"
+
 func main() {
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -29,6 +32,11 @@ func main() {
 }
 
 func (s *server) Sum(stream pb.SumService_SumServer) error {
+	success := fmt.Sprintf("SumService %s", port)
+	response := &pb.SumResponse{Data: &success}
+	if err := stream.Send(response); err != nil {
+		return err
+	}
 	for {
 		in, err := stream.Recv()
 		if err == io.EOF {
@@ -38,9 +46,11 @@ func (s *server) Sum(stream pb.SumService_SumServer) error {
 			return err
 		}
 
-		port := *in.Port
-		fmt.Println(port)
-		success := "SumServer: HTTP Server is successfully started"
+		num1 := *in.Num1
+		num2 := *in.Num2
+		fmt.Println(num1 + num2)
+		res := strconv.Itoa(int(num1) + int(num2))
+		success := fmt.Sprintf("HTTP Server is successfully started result is %s", res)
 		response := &pb.SumResponse{Success: &success}
 		if err := stream.Send(response); err != nil {
 			return err

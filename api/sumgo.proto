@@ -9,9 +9,13 @@ service SumService {
 }
 
 message SumRequest {
-  optional string port = 1;
+  optional string action = 1;
+  optional string port = 2;
+  optional int64 num1 = 3;
+  optional int64 num2 = 4;
 }
 
 message SumResponse {
+  optional string data = 1;
   optional string success = 2;
 }
