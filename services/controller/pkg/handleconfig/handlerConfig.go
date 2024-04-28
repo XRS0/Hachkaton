@@ -15,7 +15,7 @@ type Json struct {
 }
 
 func ChangeJson(act, serv, port string) string {
-	pathToJson := "../config/config.json"
+	pathToJson := "../../../config/config.json"
 
 	cfgFile, err := os.ReadFile(pathToJson)
 	if err != nil {

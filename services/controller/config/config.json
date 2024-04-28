@@ -1,10 +1,18 @@
 {
-  "mSumService": {
-    "port": "50051",
-    "isRunning": true
-  },
-  "msum": {
-    "port": "50057",
-    "isRunning": true
-  }
+ "mSumService": {
+  "port": "50051",
+  "isRunning": true
+ },
+ "mmicroservice1": {
+  "port": "50055",
+  "isRunning": false
+ },
+ "mservice1": {
+  "port": "50058",
+  "isRunning": true
+ },
+ "mservice2": {
+  "port": "50052",
+  "isRunning": false
+ }
 }

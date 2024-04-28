@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"hack/services/controller/internal/pinger"
+	. "hack/services/controller/internal/status"
 	cfg "hack/services/controller/pkg/handleconfig"
 	"os"
 	"strconv"
@@ -32,6 +33,15 @@ func RunCLI() {
 			action = "searchbc"
 			fmt.Printf("%s...:\n", action)
 
+		},
+	}
+
+	var cmdStatus = &cobra.Command{
+		Use:   "status",
+		Short: "Displays the status of the microservices",
+		Long:  `Displays current status information about all managed microservices, including their operational state and health.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			HandleStatus()
 		},
 	}
 
@@ -132,7 +142,7 @@ func RunCLI() {
 		},
 	}
 
-	rootCmd.AddCommand(cmdStart, cmdStop, cmdAdd, cmdChPort, cmdDel, cmdSearchBC)
+	rootCmd.AddCommand(cmdStart, cmdStop, cmdAdd, cmdChPort, cmdDel, cmdSearchBC, cmdStatus)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
