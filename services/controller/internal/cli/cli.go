@@ -6,12 +6,16 @@ import (
 	cfg "hack/services/controller/pkg/handleconfig"
 	"os"
 	"strconv"
-	"sync"
 
 	"github.com/spf13/cobra"
 )
 
-func RunCLI() (string, string, string) {
+type Ports struct {
+	OldPort string
+	NewPort string
+}
+
+func RunCLI() {
 	var action, service, port string
 
 	var rootCmd = &cobra.Command{
@@ -35,19 +39,12 @@ func RunCLI() (string, string, string) {
 		Use:   "start [model] [port]",
 		Short: "Starts the model",
 		Long:  `Starts the specified model on the given port.`,
-		Args:  cobra.MinimumNArgs(1), // Ensure at least the model name is provided.
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			action = "start"
 			service = args[0]
 			if service == "bc" {
 				cfg.ChangeJson(action, service, "")
-				var wg sync.WaitGroup
-				ports := []string{"localhost:50050", "localhost:50051", "localhost:50052", "localhost:50053", "localhost:50054", "localhost:50055"}
-				for _, port := range ports {
-					wg.Add(1)
-					go pinger.ConnectToStream(port, &wg)
-				}
-				wg.Wait()
 			}
 			if len(args) > 1 {
 				port = args[1]
@@ -83,21 +80,29 @@ func RunCLI() (string, string, string) {
 	}
 
 	var cmdChPort = &cobra.Command{
-		Use:   "chport [model] [old_port] [new_port]",
+		Use:   "chport [model] [new_port]",
 		Short: "Changes the port of the model",
 		Long:  `Changes the port of the specified model from old_port to new_port.`,
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			action = "chport"
-			service = args[0]
+			service = fmt.Sprintf("m%s", args[0])
 			port = args[1]
+
+			fmt.Printf("changing port for %s service...\n", service[1:])
 
 			if _, err := strconv.Atoi(port); err != nil {
 				fmt.Fprintf(os.Stderr, "Error: New port must be a number\n")
 				os.Exit(1)
 			}
 
-			fmt.Printf("change port for %s service, port changed to %s\n", service, port)
+			var ps Ports
+
+			ps.OldPort = cfg.ChangeJson(action, service, port)
+			ps.NewPort = port
+			pinger.DoAction(ps.OldPort, ps.NewPort)
+
+			fmt.Printf("port is changed to %s\n", port)
 		},
 	}
 
@@ -110,6 +115,7 @@ func RunCLI() (string, string, string) {
 			action = "add"
 			service = args[0]
 			port = args[1]
+			cfg.ChangeJson(action, service, port)
 			fmt.Printf("%sing new service %s on port: %s\n", action, service, port)
 		},
 	}
@@ -132,5 +138,4 @@ func RunCLI() (string, string, string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	return action, service, port
 }

@@ -2,9 +2,10 @@ package main
 
 import (
 	. "hack/services/controller/internal/cli"
-	cfg "hack/services/controller/pkg/handleconfig"
+	// . "hack/services/controller/internal/status"
 )
 
 func main() {
-	cfg.ChangeJson(RunCLI())
+	// HandleStatus()
+	RunCLI()
 }

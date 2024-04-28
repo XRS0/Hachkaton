@@ -6,16 +6,25 @@ option go_package = "../gen";
 
 service SumService {
   rpc Sum(stream SumRequest) returns (stream SumResponse);
+  rpc DoAction(DoActionRequest) returns (DoActionResponse);
+}
+
+message DoActionRequest {
+  string action = 1;
+  optional string port = 2;
+}
+
+message DoActionResponse {
+  optional string data = 1;
+  string success = 2;
 }
 
 message SumRequest {
-  optional string action = 1;
-  optional string port = 2;
-  optional int64 num1 = 3;
-  optional int64 num2 = 4;
+  int64 num1 = 3;
+  int64 num2 = 4;
 }
 
 message SumResponse {
   optional string data = 1;
-  optional string success = 2;
+  string success = 2;
 }

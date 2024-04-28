@@ -3,6 +3,7 @@ package pinger
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -79,7 +80,7 @@ func AttemptStream(port string) error {
 
 	num1, num2 = -10, 2
 
-	go SendData(&num1, &num2, stream, port)
+	go SendData(num1, num2, stream, port)
 
 	response, err := stream.Recv()
 	if err != nil {
@@ -93,17 +94,49 @@ func AttemptStream(port string) error {
 			manager.RemoveConnection(port)
 			return err
 		}
-		fmt.Printf("INFO Received from %s, success: %s\n", respData, *response.Success)
+		fmt.Printf("INFO Received from %s, success: %s\n", respData, response.Success)
 	}
 }
 
-func SendData(num1, num2 *int64, stream pb.SumService_SumClient, port string) {
+func SendData(num1, num2 int64, stream pb.SumService_SumClient, port string) {
 	if err := stream.Send(&pb.SumRequest{Num1: num1, Num2: num2}); err != nil {
 		fmt.Printf("Failed to send data to port %s: %v\n", port, err)
 		return
 	}
 	time.Sleep(1 * time.Second)
-	*num1++
-	*num2++
+	num1++
+	num2++
 	SendData(num1, num2, stream, port)
+}
+
+func DoAction(oldPort, newPort string) {
+	hst := fmt.Sprintf("localhost:%s", oldPort)
+	conn, err := grpc.Dial(hst, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	c := pb.NewSumServiceClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	r, err := c.DoAction(ctx, &pb.DoActionRequest{
+		Action: "chport",
+		Port:   &newPort,
+	})
+	if err != nil {
+		log.Fatalf("could not execute action: %v", err)
+	}
+	fmt.Printf("DoAction response: %s\n", r.GetData())
+	conn.Close()
+	hst = fmt.Sprintf("localhost:%s", newPort)
+	conn, err = grpc.Dial(hst, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	c = pb.NewSumServiceClient(conn)
+
+	ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
 }

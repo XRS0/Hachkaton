@@ -1,6 +1,10 @@
 {
-  "SumService": {
+  "mSumService": {
     "port": "50051",
-    "isRunning": false
+    "isRunning": true
+  },
+  "msum": {
+    "port": "50057",
+    "isRunning": true
   }
 }

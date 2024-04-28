@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SumServiceClient interface {
 	Sum(ctx context.Context, opts ...grpc.CallOption) (SumService_SumClient, error)
+	DoAction(ctx context.Context, in *DoActionRequest, opts ...grpc.CallOption) (*DoActionResponse, error)
 }
 
 type sumServiceClient struct {
@@ -64,11 +65,21 @@ func (x *sumServiceSumClient) Recv() (*SumResponse, error) {
 	return m, nil
 }
 
+func (c *sumServiceClient) DoAction(ctx context.Context, in *DoActionRequest, opts ...grpc.CallOption) (*DoActionResponse, error) {
+	out := new(DoActionResponse)
+	err := c.cc.Invoke(ctx, "/service.SumService/DoAction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SumServiceServer is the server API for SumService service.
 // All implementations must embed UnimplementedSumServiceServer
 // for forward compatibility
 type SumServiceServer interface {
 	Sum(SumService_SumServer) error
+	DoAction(context.Context, *DoActionRequest) (*DoActionResponse, error)
 	mustEmbedUnimplementedSumServiceServer()
 }
 
@@ -78,6 +89,9 @@ type UnimplementedSumServiceServer struct {
 
 func (UnimplementedSumServiceServer) Sum(SumService_SumServer) error {
 	return status.Errorf(codes.Unimplemented, "method Sum not implemented")
+}
+func (UnimplementedSumServiceServer) DoAction(context.Context, *DoActionRequest) (*DoActionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DoAction not implemented")
 }
 func (UnimplementedSumServiceServer) mustEmbedUnimplementedSumServiceServer() {}
 
@@ -118,13 +132,36 @@ func (x *sumServiceSumServer) Recv() (*SumRequest, error) {
 	return m, nil
 }
 
+func _SumService_DoAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DoActionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SumServiceServer).DoAction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.SumService/DoAction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SumServiceServer).DoAction(ctx, req.(*DoActionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SumService_ServiceDesc is the grpc.ServiceDesc for SumService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var SumService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "service.SumService",
 	HandlerType: (*SumServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "DoAction",
+			Handler:    _SumService_DoAction_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Sum",

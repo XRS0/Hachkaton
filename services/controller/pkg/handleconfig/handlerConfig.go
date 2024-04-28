@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 )
 
 type Json struct {
@@ -13,7 +14,7 @@ type Json struct {
 	IsRunning bool   `json:"isRunning"`
 }
 
-func ChangeJson(act, serv, port string) {
+func ChangeJson(act, serv, port string) string {
 	pathToJson := "../config/config.json"
 
 	cfgFile, err := os.ReadFile(pathToJson)
@@ -53,6 +54,9 @@ func ChangeJson(act, serv, port string) {
 					newJson[key] = Json{Port: val.Port, IsRunning: true}
 				}
 			}
+			var wg sync.WaitGroup
+
+			wg.Wait()
 		} else {
 			if val, ok := newJson[key]; ok {
 				newJson[key] = Json{Port: val.Port, IsRunning: true}
@@ -77,6 +81,7 @@ func ChangeJson(act, serv, port string) {
 	case "chport":
 		if val, ok := newJson[serv]; ok {
 			newJson[serv] = Json{Port: port, IsRunning: val.IsRunning}
+			return val.Port
 		} else {
 			log.Fatalf("ERROR: Server with key %s does not exist", serv)
 		}
@@ -100,6 +105,7 @@ func ChangeJson(act, serv, port string) {
 	}
 	fmt.Println(newJson)
 	fmt.Println("Json is fine!")
+	return ""
 }
 
 // TODO:
