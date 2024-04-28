@@ -1,47 +1,42 @@
 import grpc
-import controller_pb2
-import controller_pb2_grpc
+import service_pb2
+import service_pb2_grpc
 from concurrent import futures
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 http_server_running = False
+now_port = None
+is_port_change = False
 
 
-class StringService(controller_pb2_grpc.StringServiceServicer):
-    def StreamStrings(self, request_iterator, context):
+class SumService(service_pb2_grpc.SumServiceServicer):
+    def Sum(self, request_iterator, context):
         global http_server_running
-        # Send a stream message to indicate that the server is running
-        yield controller_pb2.StringReply(message="Сервер работает")
         for request in request_iterator:
-            message = request.message
-            message_parts = message.split(", ")
-
-            # Initialize variables for port and action
-            port = None
-            action = None
-
-            # Iterate over each part of the message
-            for part in message_parts:
-                key, value = part.split(":")
-                if key == "port":
-                    port = int(value)
-                    print(port)
-                    if now_port != port:
-                        server.stop(grace=None)
-                        serve(port)
-                elif key == "action":
-                    action = value
-            print(f"принято с клиента: {request.message}")
-            yield controller_pb2.StringReply(message=f"стрим от сервера")
-            if action == "start":
+            if request.action == 'sum':
+                print(request.num1, request.num2, request.port)
+                result = request.num1 + request.num2
+                yield service_pb2.SumResponse(data=str(result), success='true')
+            elif request.action == 'start':
                 http_server_thread = threading.Thread(target=start_http_server)
                 http_server_thread.start()
                 http_server_running = True
-                return controller_pb2.StringReply(message="HTTP server started")
-            elif action == "stop":
+                yield service_pb2.SumResponse(data='HTTP сервер запущен', success='true')
+            elif request.action == "stop":
                 http_server_running = False
-                return controller_pb2.StringReply(message="HTTP server stopped")
+                yield service_pb2.SumResponse(data='HTTP сервер остановлен', success='true')
+            elif request.action == "chport":
+                change_port(request.port)
+
+
+def change_port(port):
+    global is_port_change
+    if port != now_port:
+        server.stop(grace=None)
+        is_port_change = True
+        serve(port)
+    return
 
 
 def start_http_server():
@@ -63,17 +58,3 @@ def start_http_server():
     print("HTTP server started on port 8080")
     while http_server_running:
         httpd.handle_request()
-
-
-def serve(grpc_port):
-    global server, now_port
-    now_port = grpc_port
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    controller_pb2_grpc.add_StringServiceServicer_to_server(StringService(), server)
-    server.add_insecure_port(f"[::]:{grpc_port}")
-    server.start()
-    server.wait_for_termination()
-
-
-if __name__ == "__main__":
-    serve(50051)

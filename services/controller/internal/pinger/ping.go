@@ -4,13 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
 	pb "hack/services/controller/gen"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 )
 
 type ConnectionInfo struct {
@@ -115,7 +118,7 @@ func DoAction(oldPort, newPort string) {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-
+	defer conn.Close()
 	c := pb.NewSumServiceClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -126,17 +129,38 @@ func DoAction(oldPort, newPort string) {
 		Port:   &newPort,
 	})
 	if err != nil {
-		log.Fatalf("could not execute action: %v", err)
-	}
-	fmt.Printf("DoAction response: %s\n", r.GetData())
-	conn.Close()
-	hst = fmt.Sprintf("localhost:%s", newPort)
-	conn, err = grpc.Dial(hst, grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	c = pb.NewSumServiceClient(conn)
+		grpcErr, ok := status.FromError(err)
+		if ok {
+			if grpcErr.Code() == codes.Unavailable && strings.Contains(grpcErr.Message(), "EOF") {
+				log.Printf("Received EOF, likely due to server restart: %v", err)
 
-	ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
+				data := r.GetData()
+				fmt.Printf("DoAction response: %s\n", data)
+
+				hst = fmt.Sprintf("localhost:%s", newPort)
+				newconn, err := grpc.Dial(hst, grpc.WithInsecure(), grpc.WithBlock())
+				if err != nil {
+					log.Fatalf("did not connect: %v", err)
+				}
+				c = pb.NewSumServiceClient(newconn)
+
+				_, cancel := context.WithTimeout(context.Background(), time.Minute)
+				defer cancel()
+			} else {
+				log.Fatalf("Failed to execute action due to gRPC error: %v", err)
+			}
+		}
+	}
+	data := r.GetData()
+	fmt.Printf("DoAction response: %s\n", data)
 }
+
+// hst = fmt.Sprintf("localhost:%s", newPort)
+// conn, err = grpc.Dial(hst, grpc.WithInsecure(), grpc.WithBlock())
+// if err != nil {
+// 	log.Fatalf("did not connect: %v", err)
+// }
+// c = pb.NewSumServiceClient(conn)
+
+// ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
+// defer cancel()
